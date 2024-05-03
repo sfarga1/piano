@@ -1,3 +1,3 @@
-Piano made with React
+# Piano made with React
 
 Credits to SuboptimalEng and WebDevSimplified
