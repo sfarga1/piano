@@ -1,26 +1,43 @@
-import _ from 'lodash';
 import React from 'react';
-
 import './Key.css';
 import { NOTE_TO_KEY } from '../global/constants';
 
 class Key extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isPressed: false
+    };
+  }
+
+  handleKeyUp = () => {
+    this.setState({ isPressed: false });
+  }
+
+  componentDidMount() {
+    window.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keyup', this.handleKeyUp);
+  }
+
   noteIsFlat = (note) => {
     return note.length > 1;
   }
 
-  keyIsPressed = (note, pressedKeys) => {
-    return _.includes(pressedKeys, NOTE_TO_KEY[note]);
+  keyIsPressed = () => {
+    return this.props.pressedKeys.includes(NOTE_TO_KEY[this.props.note]);
   }
 
   render() {
     let keyClassName = "key";
     const noteIsFlat = this.noteIsFlat(this.props.note);
-    const keyIsPressed = this.keyIsPressed(this.props.note, this.props.pressedKeys);
+    const keyIsPressed = this.keyIsPressed();
     if (noteIsFlat) {
       keyClassName += " flat";
     }
-    if (keyIsPressed) {
+    if (keyIsPressed || this.state.isPressed) {
       keyClassName += " pressed";
     }
 

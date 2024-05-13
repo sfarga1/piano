@@ -13,12 +13,28 @@ class Piano extends React.Component {
         super(props);
         this.state = {
             pressedKeys: [],
+            audioFiles: []
         };
+    }
+
+    componentDidMount = () => {
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
+
+        // Añadir la lógica para cargar los archivos de audio al estado
+        const audioFiles = _.map(NOTES, (note, index) => {
+            const audio = new Audio(`../../notes/${note}.mp3`);
+            audio.id = note;
+            return audio;
+        });
+
+        this.setState({ audioFiles });
     }
 
     playNote = (note) => {
         if (!_.isEmpty(note)) {
-            const noteAudio = new Audio(document.getElementById(note).src);
+            const noteAudio = this.state.audioFiles.find(audio => audio.id === note);
+            noteAudio.currentTime = 0;
             noteAudio.play();
         }
     }
@@ -39,17 +55,17 @@ class Piano extends React.Component {
     }
 
     handleKeyUp = (event) => {
-        const index = this.state.pressedKeys.indexOf(event.key);
+        const key = event.key;
+        const index = this.state.pressedKeys.indexOf(key);
         if (index > -1) {
-            this.setState(state => ({
-                pressedKeys: state.pressedKeys.splice(index, 1)
-            }));
+            const updatedPressedKeys = [...this.state.pressedKeys];
+            updatedPressedKeys.splice(index, 1);
+            this.setState({
+                pressedKeys: updatedPressedKeys
+            });
+            // Restablecemos el estado de la tecla actualmente presionada en Key
+            this.refs[key].setState({ isPressed: false });
         }
-    }
-
-    componentDidMount = () => {
-        window.addEventListener('keydown', this.handleKeyDown);
-        window.addEventListener('keyup', this.handleKeyUp);
     }
 
     render() {
@@ -59,16 +75,7 @@ class Piano extends React.Component {
                     key={index}
                     note={note}
                     pressedKeys={this.state.pressedKeys}
-                />
-            );
-        });
-
-        const audioFiles = _.map(NOTES, (note, index) => {
-            return (
-                <audio
-                    id={note}
-                    key={index}
-                    src={`../../notes/${note}.mp3`}
+                    ref={note}
                 />
             );
         });
@@ -77,9 +84,6 @@ class Piano extends React.Component {
             <div>
                 <div className="piano">
                     {keys}
-                </div>
-                <div>
-                    {audioFiles}
                 </div>
             </div>
         );
